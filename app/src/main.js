@@ -37,6 +37,7 @@ const timeout = setInterval(function () {
           "afterbegin",
           `<div class="w-250 h-20 bg-red-100"><h1>${p1selection[i].setup} ${p1selection[i].delivery}</h1><button>display stats</button></div>`
         );
+      document.querySelectorAll("button").forEach
     }
   }
 }, 100);
