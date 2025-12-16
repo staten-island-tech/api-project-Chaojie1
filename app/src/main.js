@@ -16,9 +16,9 @@ async function getData(URL) {
     console.log("no bueno");
   }
 }
-const p1selection = [];
+const selection = [];
 for (let i = 1; i <= 10; i++) {
-  getData(URL).then((data) => p1selection.push(data));
+  getData(URL).then((data) => selection.push(data));
 }
 document
   .querySelector("#app")
@@ -27,17 +27,28 @@ document
     `<h1>hol up, the data is coming, chillax</h1>`
   );
 const timeout = setInterval(function () {
-  if (p1selection.length === 10) {
+  if (selection.length === 10) {
     clearInterval(timeout);
     document.querySelector("#app").innerHTML = "";
-    for (let i = 1; i < p1selection.length; i++) {
+    for (let i = 1; i < selection.length; i++) {
+      const uniqueletters = []
+      for (let ii = 1; ii<selection.length;ii++){
+        if (!uniqueletters.find((letter)=>letter===selection[i].setup[ii])){
+          uniqueletters.push(selection[i].setup[ii])
+        }
+      }
+      const stats = { Health: selection[i].setup.length, Speed: selection[i].setup.split('').filter(char => char === " ").length, Power:uniqueletters.length, };
       document
         .querySelector("#app")
         .insertAdjacentHTML(
           "afterbegin",
-          `<div class="w-250 h-20 bg-red-100"><h1>${p1selection[i].setup} ${p1selection[i].delivery}</h1><button>display stats</button></div>`
+          `<div class="w-full h-50" id="${i}"><h1>Joke: ${selection[i].setup}</h1><h1>Punchline: ${selection[i].delivery}</h1></div>`
         );
-      document.querySelectorAll("button").forEach
+        for (const stat in stats){
+          document.getElementById(i).insertAdjacentHTML("beforeend",`<h1>${stat} : ${stats[stat]}</h1>`)
+        }
+        
+      document.querySelectorAll("button").forEach;
     }
   }
 }, 100);
