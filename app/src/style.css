@@ -4,5 +4,5 @@ html, body, #app {
   @apply w-full h-full p-0 m-0;
 }
 button {
-  @apply rounded-md border-3
+  @apply font-bold
 }
