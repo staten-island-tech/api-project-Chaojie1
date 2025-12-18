@@ -17,7 +17,7 @@ async function getData(URL) {
   }
 }
 const selection = [];
-for (let i = 1; i <= 5; i++) {
+for (let i = 0; i < 10; i++) {
   getData(URL).then((data) => selection.push(data));
 }
 document
@@ -26,25 +26,34 @@ document
     "afterbegin",
     `<h1>hol up, the data is coming, chillax</h1>`
   );
-const timeout = setInterval(function () {
-  if (selection.length === 5) {
-    clearInterval(timeout);
-    document.querySelector("#app").innerHTML = "";
-    for (let i = 0; i < selection.length; i++) {
+function calculatestats(string){
+      const totalletters = string.length
+      const spaces = string.split('').filter(char => char === " ").length
       const uniqueletters = []
-      for (let ii = 1; ii<selection[i].setup.length;ii++){
-        if (!uniqueletters.find((letter)=>letter===selection[i].setup[ii])){
-          uniqueletters.push(selection[i].setup[ii])
+      for (let ii = 1; ii<string.length;ii++){
+        if (!uniqueletters.find((letter)=>letter===string[ii])){
+          uniqueletters.push(string[ii])
         }
       }
-      const totalletters = selection[i].setup.length
-      const spaces = selection[i].setup.split('').filter(char => char === " ").length
       const stats = { 
         Health: totalletters, 
         Speed: Math.ceil(spaces*10/((totalletters**2)/100))/1, 
         Power: Math.floor(uniqueletters.length/(1+totalletters/10)*10)/10, 
         Defense: Math.floor((totalletters-spaces)*10/(spaces+1))/10 
       };
+      return stats
+}
+const timeout = setInterval(function () {
+  if (selection.length === 10) {
+    document.querySelector("#app").innerHTML = "";
+    for (let i = 0; i < 5; i++) {
+      const uniqueletters = []
+      for (let ii = 1; ii<selection[i].setup.length;ii++){
+        if (!uniqueletters.find((letter)=>letter===selection[i].setup[ii])){
+          uniqueletters.push(selection[i].setup[ii])
+        }
+      }
+      const stats = calculatestats(selection[i].setup)
       document
         .querySelector("#app")
         .insertAdjacentHTML(
@@ -63,7 +72,9 @@ const timeout = setInterval(function () {
     document.querySelectorAll("button").forEach((selectbutton)=>selectbutton.addEventListener("click",function(){
       const name = selectbutton.closest("div").querySelector("#joke").textContent.slice(6,selectbutton.closest("div").querySelector("#joke").textContent.length)
       const powermove = selectbutton.closest("div").querySelector("#punch").textContent.slice(11,selectbutton.closest("div").querySelector("#punch").textContent.length)
-      
+      const stats = calculatestats(name)
+      document.getElementById("app").insertAdjacentHTML("afterbegin",`<h1 class="absolute top-1/3 left-1 font-bold text-7xl">P1 SELECTED : ${name}<h1>`)
+          clearInterval(timeout);
     }));
   }
 }, 100);
