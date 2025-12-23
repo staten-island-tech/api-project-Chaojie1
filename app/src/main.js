@@ -107,15 +107,38 @@ const timeout2 = setInterval(function () {
     }));
   }
 }, 100);
-
+function clamp(min,max,num){
+  return Math.max(min, Math.min(num, max));
+}
 // the actual game
 const timeout3 = setInterval(function(){
   if (p2selection){
     clearInterval(timeout3)
     body.innerHTML = ""
-    body.insertAdjacentHTML("beforeend",`<h1 class="absolute top-0 left-0">P1 : ${p1selection.Name}</h1>`)
-    body.insertAdjacentHTML("beforeend",`<h1 class="absolute top-5 left-0">HP: ${p1selection.Stats.Health} SPD: ${p1selection.Stats.Speed} ATK: ${p1selection.Stats.Power} DEF: ${p1selection.Stats.Defense}</h1>`)
-    body.insertAdjacentHTML("beforeend",`<h1 class="absolute top-0 right-0">P2 : ${p2selection.Name}</h1>`)
-    body.insertAdjacentHTML("beforeend",`<h1 class="absolute top-5 right-0">HP: ${p2selection.Stats.Health} SPD: ${p2selection.Stats.Speed} ATK: ${p2selection.Stats.Power} DEF: ${p2selection.Stats.Defense}</h1>`)
+    body.insertAdjacentHTML("beforeend",`<h1 id="p1" class="absolute top-0 left-0">P1 : ${p1selection.Name}</h1>`)
+    body.insertAdjacentHTML("beforeend",`<h1 id="p2" class="absolute top-0 right-0">P2 : ${p2selection.Name}</h1>`)
+    let p1pos = { x: 0, y: 0 };
+    const p1 = document.getElementById("p1");
+
+    function clamp(min, max, value) {
+    return Math.min(Math.max(value, min), max);
+    }
+
+    document.addEventListener("keydown", (e) => {
+    const rect = p1.getBoundingClientRect();
+    const maxX = window.innerWidth  - rect.width;
+    const maxY = window.innerHeight - rect.height;
+      console.log(e.code)
+    if (e.code === "KeyD") p1pos.x += 10;
+    if (e.code === "KeyA") p1pos.x -= 10;
+    if (e.code === "KeyS") p1pos.y += 10;
+    if (e.code === "KeyW") p1pos.y -= 10;
+
+    p1pos.x = clamp(0, maxX, p1pos.x);
+    p1pos.y = clamp(0, maxY, p1pos.y);
+
+    p1.style.transform = `translate(${p1pos.x}px, ${p1pos.y}px)`;
+    });
+
   }
 },100)
