@@ -17,7 +17,20 @@ async function getData(URL) {
     console.log("no bueno");
   }
 }
+
 const body = document.querySelector("#app")
+function isOverlapping(e1, e2) {
+  const r1 = e1.getBoundingClientRect();
+  const r2 = e2.getBoundingClientRect();
+
+  return !(
+    r1.right < r2.left ||
+    r1.left > r2.right ||
+    r1.bottom < r2.top ||
+    r1.top > r2.bottom
+  );
+}
+
 function calcStats(string){
   const uniqueletters = []
   for (let ii = 0; ii<string.length;ii++){
@@ -115,29 +128,55 @@ const timeout3 = setInterval(function(){
   if (p2selection){
     clearInterval(timeout3)
     body.innerHTML = ""
-    body.insertAdjacentHTML("beforeend",`<h1 id="p1" class="absolute top-0 left-0">P1 : ${p1selection.Name}</h1>`)
-    body.insertAdjacentHTML("beforeend",`<h1 id="p2" class="absolute top-0 right-0">P2 : ${p2selection.Name}</h1>`)
-    let p1pos = { x: 0, y: 0 };
+    body.insertAdjacentHTML("beforeend",`<h1 id="p1" class="absolute top-0 left-0 w-60">P1 : ${p1selection.Name}</h1>`)
+    body.insertAdjacentHTML("beforeend",`<h1 id="p2" class="absolute top-0 left-0 w-60">P2 : ${p2selection.Name}</h1>`)
     const p1 = document.getElementById("p1");
+    const p2 = document.getElementById("p2");
+    let p1Health = p1selection.Stats.Health
+    let p2Health = p2selection.Stats.Health
+    let p1pos = { x: 0, y: 0 };
+    let p2pos = { x: 100000, y: 0 };
+    const p1rect = p1.getBoundingClientRect();
+    const p2rect = p2.getBoundingClientRect();
+    const p1max = {x:window.innerWidth  - p1rect.width,y:window.innerHeight - p1rect.height};
+    const p2max = {x:window.innerWidth  - p2rect.width,y:window.innerHeight - p2rect.height};
+    p2pos.x = clamp(0, p2max.x, p2pos.x);
+    p2.style.transform = `translate(${p2pos.x}px, ${p2pos.y}px)`;
 
     function clamp(min, max, value) {
     return Math.min(Math.max(value, min), max);
     }
 
     document.addEventListener("keydown", (e) => {
-    const rect = p1.getBoundingClientRect();
-    const maxX = window.innerWidth  - rect.width;
-    const maxY = window.innerHeight - rect.height;
       console.log(e.code)
-    if (e.code === "KeyD") p1pos.x += 10;
-    if (e.code === "KeyA") p1pos.x -= 10;
-    if (e.code === "KeyS") p1pos.y += 10;
-    if (e.code === "KeyW") p1pos.y -= 10;
-
-    p1pos.x = clamp(0, maxX, p1pos.x);
-    p1pos.y = clamp(0, maxY, p1pos.y);
-
+    if (e.code === "KeyD") p1pos.x += p1selection.Stats.Speed*3;
+    if (e.code === "KeyA") p1pos.x -= p1selection.Stats.Speed*3;
+    if (e.code === "KeyS") p1pos.y += p1selection.Stats.Speed*3;
+    if (e.code === "KeyW") p1pos.y -= p1selection.Stats.Speed*3;
+    if (e.code === "ArrowRight") p2pos.x += p2selection.Stats.Speed*3;
+    if (e.code === "ArrowLeft") p2pos.x -= p2selection.Stats.Speed*3;
+    if (e.code === "ArrowDown") p2pos.y += p2selection.Stats.Speed*3;
+    if (e.code === "ArrowUp") p2pos.y -= p2selection.Stats.Speed*3;
+    p1pos.x = clamp(0, p1max.x, p1pos.x);
+    p1pos.y = clamp(0, p1max.y, p1pos.y);
+    p2pos.x = clamp(0, p2max.x, p2pos.x);
+    p2pos.y = clamp(0, p2max.y, p2pos.y);
     p1.style.transform = `translate(${p1pos.x}px, ${p1pos.y}px)`;
+    p2.style.transform = `translate(${p2pos.x}px, ${p2pos.y}px)`;
+        const overlapping = isOverlapping(p1, p2);
+
+      if (overlapping && e.code === "KeyE") {
+        const damage = Math.max(1,p1selection.Stats.Power/(1-p2selection.Stats.Defense));
+        p2Health -= damage;
+        console.log(`P1 hits P2 for ${damage} HP, P2 has ${p2Health} HP left`);
+      }
+      if (overlapping && e.code === "ShiftRight") {
+        const damage = Math.max(1,p2selection.Stats.Power/(1-p1selection.Stats.Defense));
+        p1Health -= damage;
+        console.log(`P2 hits P1 for ${damage} HP, P1 has ${p1Health} HP left`);
+      }
+      if (p1Health <= 0) console.log("P2 wins!");
+      if (p2Health <= 0) console.log("P1 wins!");
     });
 
   }
