@@ -123,17 +123,26 @@ const timeout2 = setInterval(function () {
 function clamp(min,max,num){
   return Math.max(min, Math.min(num, max));
 }
+function ha(){
+  setTimeout(function(){
+    body.insertAdjacentHTML("beforeend",`<h1>HA</h1>`)
+    ha()
+  },10)
+}
 // the actual game
+let gameend = false
+let p1atkcd = false
+let p2atkcd = false
 const timeout3 = setInterval(function(){
   if (p2selection){
     clearInterval(timeout3)
     body.innerHTML = ""
-    body.insertAdjacentHTML("beforeend",`<h1 id="p1" class="absolute top-0 left-0 w-60">P1 : ${p1selection.Name}</h1>`)
-    body.insertAdjacentHTML("beforeend",`<h1 id="p2" class="absolute top-0 left-0 w-60">P2 : ${p2selection.Name}</h1>`)
-    const p1 = document.getElementById("p1");
-    const p2 = document.getElementById("p2");
     let p1Health = p1selection.Stats.Health
     let p2Health = p2selection.Stats.Health
+    body.insertAdjacentHTML("beforeend",`<h1 id="p1" class="absolute top-0 left-0 w-60">P1 : ${p1selection.Name} HP: ${p1Health}</h1>`)
+    body.insertAdjacentHTML("beforeend",`<h1 id="p2" class="absolute top-0 left-0 w-60">P2 : ${p2selection.Name} HP: ${p2Health}</h1>`)
+    const p1 = document.getElementById("p1");
+    const p2 = document.getElementById("p2");
     let p1pos = { x: 0, y: 0 };
     let p2pos = { x: 100000, y: 0 };
     const p1rect = p1.getBoundingClientRect();
@@ -148,7 +157,7 @@ const timeout3 = setInterval(function(){
     }
 
     document.addEventListener("keydown", (e) => {
-      console.log(e.code)
+      if (gameend === true)return;
     if (e.code === "KeyD") p1pos.x += p1selection.Stats.Speed*3;
     if (e.code === "KeyA") p1pos.x -= p1selection.Stats.Speed*3;
     if (e.code === "KeyS") p1pos.y += p1selection.Stats.Speed*3;
@@ -165,18 +174,48 @@ const timeout3 = setInterval(function(){
     p2.style.transform = `translate(${p2pos.x}px, ${p2pos.y}px)`;
         const overlapping = isOverlapping(p1, p2);
 
-      if (overlapping && e.code === "KeyE") {
-        const damage = Math.max(1,p1selection.Stats.Power/(1-p2selection.Stats.Defense));
+      if (overlapping && e.code === "KeyE" && p1atkcd === false) {
+        p1atkcd = true
+        setTimeout(function(){p1atkcd = false},2500/p1selection.Stats.Speed)
+        const damage = clamp(0.1,100,p1selection.Stats.Power-p2selection.Stats.Defense/10)
         p2Health -= damage;
-        console.log(`P1 hits P2 for ${damage} HP, P2 has ${p2Health} HP left`);
+        p2.textContent = `P2 : ${p2selection.Name} HP: ${Math.ceil(p2Health)}`
       }
-      if (overlapping && e.code === "ShiftRight") {
-        const damage = Math.max(1,p2selection.Stats.Power/(1-p1selection.Stats.Defense));
+      if (overlapping && e.code === "Slash" && p2atkcd === false) {
+        p2atkcd = true
+        setTimeout(function(){p2atkcd = false},2500/p2selection.Stats.Speed)
+        const damage = clamp(0.1,100,p2selection.Stats.Power-p1selection.Stats.Defense/10)
         p1Health -= damage;
-        console.log(`P2 hits P1 for ${damage} HP, P1 has ${p1Health} HP left`);
+        p1.textContent = `P1 : ${p1selection.Name} HP: ${Math.ceil(p1Health)}`
       }
-      if (p1Health <= 0) console.log("P2 wins!");
-      if (p2Health <= 0) console.log("P1 wins!");
+      if (p1Health <= 0){
+        gameend=true
+        body.innerHTML = ""
+        body.insertAdjacentHTML("afterbegin","<h1>p2 wins les go</h1>")
+        setTimeout(function(){
+          body.insertAdjacentHTML("beforeend",`<h1>${p2selection.Name}</h1>`)
+          setTimeout(function(){
+            body.insertAdjacentHTML("beforeend",`<h1>${p2selection.Powermove}</h1>`)
+            setTimeout(function(){
+              ha()
+            },1000)
+          },2500)
+        },1000)
+      };
+      if (p2Health <= 0){
+        gameend=true
+        body.innerHTML = ""
+        body.insertAdjacentHTML("afterbegin","<h1>p1 wins les go</h1>")
+        setTimeout(function(){
+          body.insertAdjacentHTML("beforeend",`<h1>${p1selection.Name}</h1>`)
+          setTimeout(function(){
+            body.insertAdjacentHTML("beforeend",`<h1>${p1selection.Powermove}</h1>`)
+            setTimeout(function(){
+              ha()
+            },1000)
+          },2500)
+        },1000)
+      };
     });
 
   }
