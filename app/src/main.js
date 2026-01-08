@@ -22,7 +22,6 @@ const body = document.querySelector("#app")
 function isOverlapping(e1, e2) {
   const r1 = e1.getBoundingClientRect();
   const r2 = e2.getBoundingClientRect();
-
   return !(
     r1.right < r2.left ||
     r1.left > r2.right ||
@@ -43,7 +42,7 @@ function calcStats(string){
   const stats = { 
     Health: totalletters, 
     Speed: Math.ceil(spaces*10/((totalletters**2)/100))/1, 
-    Power: Math.floor(uniqueletters.length/(1+totalletters/10)*10)/10, 
+    Power: Math.floor(uniqueletters.length*(1+totalletters/100))/5, 
     Defense: Math.floor((totalletters-spaces)*10/(spaces+1))/10 
   };
   return stats
@@ -72,20 +71,18 @@ const timeout = setInterval(function () {
         .querySelector("#app")
         .insertAdjacentHTML(
           "afterbegin",
-          `<div class="w-full h-50" id="${i}">
-          <h1 id="joke">Joke: ${selection[i].setup}</h1>
-          <h1 id="punch">Punchline: ${selection[i].delivery}</h1>
-          <button>Select</button>
+          `<div class="collapse collapse-arrow bg-base-100 border border-base-300" id=${i}>
+            <input type="radio" name="my-accordion-2" checked="checked" />
+            <div class="collapse-title font-semibold" id="joke">Joke: ${selection[i].setup}</div>
+            <div class="collapse-content text-sm">Health : ${stats.Health} | Speed : ${stats.Speed} | Power : ${stats.Power} | Defense : ${stats.Defense}</div>
           </div>`
         );
-        for (const stat in stats){
-          document.getElementById(i).insertAdjacentHTML("beforeend",`<h1>${stat} : ${stats[stat]}</h1>`)
-        }
-        
+        document.getElementById(i).insertAdjacentHTML("beforeend",`<button class="btn btn-neutral">Select</button>`)
     }
     document.querySelectorAll("button").forEach((selectbutton)=>selectbutton.addEventListener("click",function(){
       const name = selectbutton.closest("div").querySelector("#joke").textContent.slice(6,selectbutton.closest("div").querySelector("#joke").textContent.length)
-      const powermove = selectbutton.closest("div").querySelector("#punch").textContent.slice(11,selectbutton.closest("div").querySelector("#punch").textContent.length)
+      const powermove = selection.find((x)=>x.setup === name).delivery
+      console.log(powermove)
       const stats = calcStats(name)
       p1selection = {Name: name, Powermove: powermove, Stats: stats}
     }));
@@ -101,21 +98,19 @@ const timeout2 = setInterval(function () {
         .querySelector("#app")
         .insertAdjacentHTML(
           "afterbegin",
-          `<div class="w-full h-50" id="${i}">
-          <h1 id="joke">Joke: ${selection[i].setup}</h1>
-          <h1 id="punch">Punchline: ${selection[i].delivery}</h1>
-          <button>Select</button>
+          `<div class="collapse collapse-arrow bg-base-100 border border-base-300" id=${i}>
+            <input type="radio" name="my-accordion-2" checked="checked" />
+            <div class="collapse-title font-semibold" id="joke">Joke: ${selection[i].setup}</div>
+            <div class="collapse-content text-sm">Health : ${stats.Health} | Speed : ${stats.Speed} | Power : ${stats.Power} | Defense : ${stats.Defense}</div>
           </div>`
         );
-        for (const stat in stats){
-          document.getElementById(i).insertAdjacentHTML("beforeend",`<h1>${stat} : ${stats[stat]}</h1>`)
-        }
-        
+        document.getElementById(i).insertAdjacentHTML("beforeend",`<button class="btn btn-neutral">Select</button>`)
     }
     document.querySelectorAll("button").forEach((selectbutton)=>selectbutton.addEventListener("click",function(){
       const name = selectbutton.closest("div").querySelector("#joke").textContent.slice(6,selectbutton.closest("div").querySelector("#joke").textContent.length)
-      const powermove = selectbutton.closest("div").querySelector("#punch").textContent.slice(11,selectbutton.closest("div").querySelector("#punch").textContent.length)
+      const powermove = selection.find((x)=>x.setup === name).delivery
       const stats = calcStats(name)
+      console.log(powermove)
       p2selection = {Name: name, Powermove: powermove, Stats: stats}
     }));
   }
@@ -123,9 +118,15 @@ const timeout2 = setInterval(function () {
 function clamp(min,max,num){
   return Math.max(min, Math.min(num, max));
 }
+let has = 0
 function ha(){
   setTimeout(function(){
     body.insertAdjacentHTML("beforeend",`<h1>HA</h1>`)
+    has += 1
+    if (has > 40){
+      location.reload()
+      return
+    }
     ha()
   },10)
 }
@@ -136,6 +137,7 @@ let p2atkcd = false
 const timeout3 = setInterval(function(){
   if (p2selection){
     clearInterval(timeout3)
+    body.classList.add("overflow-hidden")
     body.innerHTML = ""
     let p1Health = p1selection.Stats.Health
     let p2Health = p2selection.Stats.Health
@@ -155,17 +157,17 @@ const timeout3 = setInterval(function(){
     function clamp(min, max, value) {
     return Math.min(Math.max(value, min), max);
     }
-
+    const movementmulti = 5
     document.addEventListener("keydown", (e) => {
       if (gameend === true)return;
-    if (e.code === "KeyD") p1pos.x += p1selection.Stats.Speed*3;
-    if (e.code === "KeyA") p1pos.x -= p1selection.Stats.Speed*3;
-    if (e.code === "KeyS") p1pos.y += p1selection.Stats.Speed*3;
-    if (e.code === "KeyW") p1pos.y -= p1selection.Stats.Speed*3;
-    if (e.code === "ArrowRight") p2pos.x += p2selection.Stats.Speed*3;
-    if (e.code === "ArrowLeft") p2pos.x -= p2selection.Stats.Speed*3;
-    if (e.code === "ArrowDown") p2pos.y += p2selection.Stats.Speed*3;
-    if (e.code === "ArrowUp") p2pos.y -= p2selection.Stats.Speed*3;
+    if (e.code === "KeyD") p1pos.x += p1selection.Stats.Speed*movementmulti;
+    if (e.code === "KeyA") p1pos.x -= p1selection.Stats.Speed*movementmulti;
+    if (e.code === "KeyS") p1pos.y += p1selection.Stats.Speed*movementmulti;
+    if (e.code === "KeyW") p1pos.y -= p1selection.Stats.Speed*movementmulti;
+    if (e.code === "ArrowRight") p2pos.x += p2selection.Stats.Speed*movementmulti;
+    if (e.code === "ArrowLeft") p2pos.x -= p2selection.Stats.Speed*movementmulti;
+    if (e.code === "ArrowDown") p2pos.y += p2selection.Stats.Speed*movementmulti;
+    if (e.code === "ArrowUp") p2pos.y -= p2selection.Stats.Speed*movementmulti;
     p1pos.x = clamp(0, p1max.x, p1pos.x);
     p1pos.y = clamp(0, p1max.y, p1pos.y);
     p2pos.x = clamp(0, p2max.x, p2pos.x);
