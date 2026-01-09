@@ -41,9 +41,9 @@ function calcStats(string){
   const spaces = string.split('').filter(char => char === " ").length
   const stats = { 
     Health: totalletters, 
-    Speed: Math.ceil(spaces*10/((totalletters**2)/100))/1, 
-    Power: Math.floor(uniqueletters.length*(1+totalletters/100))/5, 
-    Defense: Math.floor((totalletters-spaces)*10/(spaces+1))/10 
+    Speed: Math.ceil((spaces*10/((totalletters**2)/100))*10)/10, 
+    Power: Math.floor(uniqueletters.length*(1+totalletters/200))/5, 
+    Lifesteal: Math.floor((Math.floor((totalletters-spaces)*10/(spaces+1))/10)/(1+totalletters/100)*10)/10 
   };
   return stats
 }
@@ -74,7 +74,7 @@ const timeout = setInterval(function () {
           `<div class="collapse collapse-arrow bg-base-100 border border-base-300" id=${i}>
             <input type="radio" name="my-accordion-2" checked="checked" />
             <div class="collapse-title font-semibold" id="joke">Joke: ${selection[i].setup}</div>
-            <div class="collapse-content text-sm">Health : ${stats.Health} | Speed : ${stats.Speed} | Power : ${stats.Power} | Defense : ${stats.Defense}</div>
+            <div class="collapse-content text-sm">Health : ${stats.Health} | Speed : ${stats.Speed} | Power : ${stats.Power} | Lifesteal : ${stats.Lifesteal*10}%</div>
           </div>`
         );
         document.getElementById(i).insertAdjacentHTML("beforeend",`<button class="btn btn-neutral">Select</button>`)
@@ -101,7 +101,7 @@ const timeout2 = setInterval(function () {
           `<div class="collapse collapse-arrow bg-base-100 border border-base-300" id=${i}>
             <input type="radio" name="my-accordion-2" checked="checked" />
             <div class="collapse-title font-semibold" id="joke">Joke: ${selection[i].setup}</div>
-            <div class="collapse-content text-sm">Health : ${stats.Health} | Speed : ${stats.Speed} | Power : ${stats.Power} | Defense : ${stats.Defense}</div>
+            <div class="collapse-content text-sm">Health : ${stats.Health} | Speed : ${stats.Speed} | Power : ${stats.Power} | Lifesteal : ${stats.Lifesteal*10}%</div>
           </div>`
         );
         document.getElementById(i).insertAdjacentHTML("beforeend",`<button class="btn btn-neutral">Select</button>`)
@@ -110,8 +110,14 @@ const timeout2 = setInterval(function () {
       const name = selectbutton.closest("div").querySelector("#joke").textContent.slice(6,selectbutton.closest("div").querySelector("#joke").textContent.length)
       const powermove = selection.find((x)=>x.setup === name).delivery
       const stats = calcStats(name)
-      console.log(powermove)
-      p2selection = {Name: name, Powermove: powermove, Stats: stats}
+      body.innerHTML = ""
+      body.insertAdjacentHTML("afterbegin","<h1>P1, WASD - Move, E - Attack</h1>")
+      body.insertAdjacentHTML("beforeend","<h1>P2, Arrow Keys - Move, / - Attack</h1>")
+      body.insertAdjacentHTML("beforeend",'<button class="btn btn-neutral">FIGHT!!!!!</button>')
+      body.querySelector("button").addEventListener("click",function(){
+        p2selection = {Name: name, Powermove: powermove, Stats: stats}
+      })
+
     }));
   }
 }, 100);
@@ -179,16 +185,18 @@ const timeout3 = setInterval(function(){
       if (overlapping && e.code === "KeyE" && p1atkcd === false) {
         p1atkcd = true
         setTimeout(function(){p1atkcd = false},2500/p1selection.Stats.Speed)
-        const damage = clamp(0.1,100,p1selection.Stats.Power-p2selection.Stats.Defense/10)
-        p2Health -= damage;
+        p2Health -= p1selection.Stats.Power;
+        p1Health += p1selection.Stats.Power*p1selection.Stats.Lifesteal/10
+        p1.textContent = `P1 : ${p1selection.Name} HP: ${Math.ceil(p1Health)}`
         p2.textContent = `P2 : ${p2selection.Name} HP: ${Math.ceil(p2Health)}`
       }
       if (overlapping && e.code === "Slash" && p2atkcd === false) {
         p2atkcd = true
         setTimeout(function(){p2atkcd = false},2500/p2selection.Stats.Speed)
-        const damage = clamp(0.1,100,p2selection.Stats.Power-p1selection.Stats.Defense/10)
-        p1Health -= damage;
+        p1Health -= p2selection.Stats.Power;
+        p2Health += p2selection.Stats.Power*p2selection.Stats.Lifesteal/10
         p1.textContent = `P1 : ${p1selection.Name} HP: ${Math.ceil(p1Health)}`
+        p2.textContent = `P2 : ${p2selection.Name} HP: ${Math.ceil(p2Health)}`
       }
       if (p1Health <= 0){
         gameend=true
